@@ -15,6 +15,31 @@ def get_clickhouse_ddl() -> str:
         SETTINGS index_granularity = 8192;
     """
 
+def get_clickhouse_clients_ddl() -> str:
+	return """
+        CREATE TABLE IF NOT EXISTS cdc.`clients_log` (
+            id Int32,
+            family_name String NOT NULL,
+			name String NOT NULL,
+			middle_name Nullable(String),
+			email Nullable(String),
+			phone Nullable(String),
+			tax_id Nullable(String),
+			birth_date Nullable(Date),
+			gender Enum('М' = 1, 'Ж' = 2),
+			status Enum('активный' = 1, 'неактивный' = 2),
+			country Nullable(String),
+			city Nullable(String),
+            inserted_at DateTime,
+            updated_at Nullable(DateTime),
+            delivered_at DateTime DEFAULT now(),
+            __deleted BOOLEAN DEFAULT false
+        ) 
+        ENGINE=MergeTree
+        ORDER BY id
+        SETTINGS index_granularity = 8192;
+    """
+
 def get_mysql_ddl() -> str:
 	return """
 	    CREATE TABLE IF NOT EXISTS test_table(
@@ -28,4 +53,39 @@ def get_mysql_ddl() -> str:
 	    )
 	    ENGINE=InnoDB 
 	    DEFAULT CHARSET=utf8mb4;
+	"""
+
+def get_mysql_transactions_ddl() -> str:
+	return """
+	    
+	"""
+
+
+def get_mysql_clients_ddl() -> str:
+	return """
+		CREATE TABLE IF NOT EXISTS clients (
+			id INT NOT NULL AUTO_INCREMENT,
+			family_name VARCHAR(50) NOT NULL,
+			name VARCHAR(50) NOT NULL,
+			middle_name VARCHAR(50),
+			email VARCHAR(100),
+			phone VARCHAR(20),
+			tax_id VARCHAR(20),
+			birth_date DATE,
+			gender ENUM('М', 'Ж'),
+			status ENUM('активный', 'неактивный') DEFAULT 'активный',
+			country VARCHAR(50),
+			city VARCHAR(50),
+			inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (id),
+			INDEX idx_email (email),
+			INDEX idx_phone (phone),
+			INDEX idx_tax_id (tax_id),
+			INDEX idx_full_name (name, family_name, middle_name),
+			INDEX idx_status (status)
+		)
+		ENGINE=InnoDB
+		DEFAULT CHARSET=utf8mb4
+		COLLATE=utf8mb4_unicode_ci;
 	"""
