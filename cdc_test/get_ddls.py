@@ -15,6 +15,7 @@ def get_clickhouse_ddl() -> str:
         SETTINGS index_granularity = 8192;
     """
 
+
 def get_clickhouse_clients_ddl() -> str:
 	return """
         CREATE TABLE IF NOT EXISTS cdc.`clients_log` (
