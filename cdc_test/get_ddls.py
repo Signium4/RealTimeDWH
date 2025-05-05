@@ -41,6 +41,25 @@ def get_clickhouse_clients_ddl() -> str:
         SETTINGS index_granularity = 8192;
     """
 
+def get_clickhouse_accounts_ddl() -> str:
+	return """
+        CREATE TABLE IF NOT EXISTS cdc.`accounts_log`
+		(
+			account_id UInt32,
+			client_id Nullable(UInt32),
+			account_number Nullable(String),
+			account_type Nullable(String),
+			open_date Date NOT NULL,
+            inserted_at DateTime,
+            updated_at Nullable(DateTime),
+            delivered_at DateTime DEFAULT now(),
+            __deleted BOOLEAN DEFAULT false
+        ) 
+        ENGINE=MergeTree
+        ORDER BY account_id
+        SETTINGS index_granularity = 8192;
+    """
+
 def get_mysql_ddl() -> str:
 	return """
 	    CREATE TABLE IF NOT EXISTS test_table(
@@ -61,6 +80,30 @@ def get_mysql_transactions_ddl() -> str:
 	    
 	"""
 
+
+def get_mysql_transaction_type_ddl() -> str:
+	return """
+
+	"""
+
+def get_mysql_accounts_ddl() -> str:
+	return """
+		CREATE TABLE IF NOT EXISTS accounts (
+		account_id INT NOT NULL AUTO_INCREMENT,
+		client_id INT NOT NULL,
+		account_number VARCHAR(20) NOT NULL,
+		account_type VARCHAR(20) NOT NULL,
+		open_date DATE NOT NULL,
+		PRIMARY KEY (account_id),
+		INDEX idx_client (client_id),
+		INDEX idx_type (account_type)
+	) ENGINE=InnoDB CHARSET=utf8mb4;
+	"""
+
+def get_mysql_channel_ddl() -> str:
+	return """
+
+	"""
 
 def get_mysql_clients_ddl() -> str:
 	return """

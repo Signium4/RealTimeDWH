@@ -25,9 +25,9 @@ def generate_phone():
 def generate_tax_id():
     return ''.join([str(r.randint(0, 9)) for _ in range(12)])
 
-def generate_birth_date(min_age=18, max_age=70):
-    end_date = datetime.datetime.now() - datetime.timedelta(days=min_age*365)
-    start_date = end_date - datetime.timedelta(days=(max_age-min_age)*365)
+def generate_date(min=18, max=70):
+    end_date = datetime.datetime.now() - datetime.timedelta(days=min * 365)
+    start_date = end_date - datetime.timedelta(days=(max - min) * 365)
     random_days = r.randint(0, (end_date - start_date).days)
     return (start_date + datetime.timedelta(days=random_days)).strftime("%Y-%m-%d")
 
@@ -42,6 +42,16 @@ def generate_country():
 
 def generate_city():
     return fake.city()
+
+def generate_account_type():
+    account_types = ['дебетовый', 'кредитный', 'депозитный', 'ссудный', 'сберегательный']
+    weights = [0.6, 0.2, 0.1, 0.05, 0.05]  # Вероятности для каждого типа
+    return r.choices(account_types, weights=weights, k=1)[0]
+
+def generate_account_number(bank_code='12345') -> str:
+    random_digits = ''.join([str(r.randint(0, 9)) for _ in range(15)])
+    account_number = f"{bank_code}{random_digits}"
+    return account_number
 
 def generate_int_value():
     return r.randint(0, 100)

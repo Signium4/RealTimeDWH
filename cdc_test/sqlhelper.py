@@ -6,8 +6,9 @@ import pandas as pd
 import cdc_test.value_generators as vg
 
 from sqlalchemy import text
-from cdc_test.get_ddls import (get_clickhouse_ddl, get_clickhouse_clients_ddl,
-                               get_mysql_ddl, get_mysql_transactions_ddl, get_mysql_clients_ddl)
+from cdc_test.get_ddls import (get_clickhouse_ddl, get_clickhouse_clients_ddl, get_clickhouse_accounts_ddl,
+                               get_mysql_ddl, get_mysql_transactions_ddl, get_mysql_clients_ddl,
+                               get_mysql_accounts_ddl, get_mysql_transaction_type_ddl, get_mysql_channel_ddl)
 from clickhouse_driver import Client
 from clickhouse_sqlalchemy import make_session
 
@@ -26,37 +27,55 @@ CONN_PARAMS = {
 class SQLHelper:
     def __init__(self, insert_count: int = 0, update_count: int = 0, delete_count: int = 0,
                  insert_count_clients: int = 0, update_count_clients: int = 0, delete_count_clients: int = 0,
+                 insert_count_accounts: int = 0, delete_count_accounts: int = 0,
                  count_log: bool = True):
+        # Test table
         self.insert_count = insert_count
         self.update_count = update_count
         self.delete_count = delete_count
+        # Clients table
         self.insert_count_clients = insert_count_clients
         self.update_count_clients = update_count_clients
         self.delete_count_clients = delete_count_clients
+        # Accounts table
+        self.insert_count_accounts = insert_count_accounts
+        self.delete_count_accounts = delete_count_accounts
         self.count_log = count_log
         self.conn_params = CONN_PARAMS
 
         if self.count_log:
+            # Test table
             print(f"Кол-во операций INSERT в таблице Test: {self.insert_count}")
             print(f"Кол-во операций UPDATE в таблице Test: {self.update_count}")
             print(f"Кол-во операций DELETE в таблице Test: {self.delete_count}")
+            # Clients table
             print(f"Кол-во операций INSERT в таблице Clients: {self.insert_count_clients}")
             print(f"Кол-во операций UPDATE в таблице Clients: {self.update_count_clients}")
             print(f"Кол-во операций DELETE в таблице Clients: {self.delete_count_clients}")
+            # Accounts table
+            print(f"Кол-во операций INSERT в таблице Accounts: {self.insert_count_accounts}")
+            print(f"Кол-во операций DELETE в таблице Accounts: {self.delete_count_accounts}")
 
     def run_transactions(self):
+        # Test table
         if self.insert_count > 0:
             self.insert_row()
         if self.update_count > 0:
             self.update_row()
         if self.delete_count > 0:
             self.delete_row()
+        # Clients table
         if self.insert_count_clients > 0:
             self.insert_row_clients()
         if self.update_count_clients > 0:
             self.update_row_clients()
         if self.delete_count_clients > 0:
             self.delete_row_clients()
+        # Accounts table
+        if self.insert_count_accounts > 0:
+            self.insert_row_accounts()
+        if self.delete_count_accounts > 0:
+            self.delete_row_accounts()
         print("Транзакции были проведены успешно.")
 
     def create_mysql_table(self):
@@ -95,6 +114,18 @@ class SQLHelper:
             conn.execute(text(get_mysql_clients_ddl()))
         print("Создана таблица Clients в MySQL.")
 
+    def create_mysql_table_accounts(self):
+        user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
+        db_creds = f"{self.conn_params['MYSQL_HOST']}:{self.conn_params['MYSQL_PORT']}"
+
+        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user_creds}@{db_creds}")
+
+        with engine.connect() as conn:
+            conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
+            conn.execute(text("USE cdc;"))
+            conn.execute(text(get_mysql_accounts_ddl()))
+        print("Создана таблица Accounts в MySQL.")
+
     def create_clickhouse_table(self):
         client = Client(
             host=self.conn_params['CH_HOST'],
@@ -108,7 +139,7 @@ class SQLHelper:
 
         print("Создана тестовая таблица в ClickHouse")
 
-    def create_clickhouse_table_cients(self):
+    def create_clickhouse_table_clients(self):
         client = Client(
             host=self.conn_params['CH_HOST'],
             user=self.conn_params['CH_USER'],
@@ -121,18 +152,33 @@ class SQLHelper:
 
         print("Создана таблица Clients в ClickHouse")
 
+    def create_clickhouse_table_accounts(self):
+        client = Client(
+            host=self.conn_params['CH_HOST'],
+            user=self.conn_params['CH_USER'],
+            password=self.conn_params['CH_PASSWORD']
+        )
+
+        client.execute("CREATE DATABASE IF NOT EXISTS cdc;")
+        client.execute("USE cdc;")
+        client.execute(get_clickhouse_accounts_ddl())
+
+        print("Создана таблица Accounts в ClickHouse")
+
     def create_tables(self):
+        # MySQL Tables
         self.create_mysql_table()
         self.create_mysql_table_clients()
-
+        self.create_mysql_table_accounts()
+        # ClickHouse tables
         self.create_clickhouse_table()
-        self.create_clickhouse_table_cients()
+        self.create_clickhouse_table_clients()
+        self.create_clickhouse_table_accounts()
 
     def get_mysql_connection(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
         db_creds = f"{self.conn_params['MYSQL_HOST']}:{self.conn_params['MYSQL_PORT']}"
         db = "cdc"
-        #extras = "charset=utf8mb4"
         engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user_creds}@{db_creds}/{db}")
         connection = engine.connect()
 
@@ -191,7 +237,7 @@ class SQLHelper:
                     '{vg.generate_email()}',
                     '{vg.generate_phone()}',
                     '{vg.generate_tax_id()}',
-                    '{vg.generate_birth_date()}',
+                    '{vg.generate_date()}',
                     '{vg.generate_gender()}',
                     '{vg.generate_country()}',
                     '{vg.generate_city()}'
@@ -203,6 +249,31 @@ class SQLHelper:
         end = datetime.datetime.now()
         print(f"Конец транзакций (INSERT) в таблицу Clients: {end}")
         print(f"Транзакции в таблицу Clients были выполнены за {(end - start).seconds} секунд.")
+
+    def insert_row_accounts(self) -> None:
+        start = datetime.datetime.now()
+        print(f"Начало транзакций (INSERT) в таблицу Accounts: {start}")
+        for i in range(self.insert_count_accounts):
+            query = f"""
+                INSERT INTO accounts(
+                    client_id,
+                    account_number,
+                    account_type,
+                    open_date
+                )
+                VALUES (
+                    {self.get_random_id_clients()},
+                    '{vg.generate_account_number()}',
+                    '{vg.generate_account_type()}',
+                    '{vg.generate_date(0, 10)}'
+                )
+            """
+
+            self.execute_query(query)
+
+        end = datetime.datetime.now()
+        print(f"Конец транзакций (INSERT) в таблицу Accounts: {end}")
+        print(f"Транзакции в таблицу Accounts были выполнены за {(end - start).seconds} секунд.")
 
     def delete_row(self) -> None:
         start = datetime.datetime.now()
@@ -245,6 +316,27 @@ class SQLHelper:
         print(f"Конец транзакций (DELETE) в таблицу Clients: {end}")
         print(f"Транзакции в таблицу Clients были выполнены за {(end - start).seconds} секунд.")
         print(f"Удалению в таблице Clients подверглись записи со следующими индексами: {idxs}")
+
+    def delete_row_accounts(self) -> None:
+        start = datetime.datetime.now()
+        print(f"Начало транзакций (DELETE): {start}")
+
+        idxs = []
+
+        for i in range(self.delete_count_accounts):
+            idx = self.get_random_id_accounts()
+            idxs.append(idx)
+            query = f"""
+                DELETE FROM accounts 
+                WHERE account_id = {idx}
+            """
+
+            self.execute_query(query)
+
+        end = datetime.datetime.now()
+        print(f"Конец транзакций (DELETE) в таблицу Accounts: {end}")
+        print(f"Транзакции в таблицу Accounts были выполнены за {(end - start).seconds} секунд.")
+        print(f"Удалению в таблице Accounts подверглись записи со следующими индексами: {idxs}")
 
     def update_row(self) -> None:
         start = datetime.datetime.now()
@@ -314,6 +406,17 @@ class SQLHelper:
             self.execute_query(f"""
                 SELECT id
                 FROM clients
+            """)
+            .fetchall()
+        )
+
+        return int(*r.choice(min_max))
+
+    def get_random_id_accounts(self) -> int:
+        min_max = (
+            self.execute_query(f"""
+                SELECT account_id
+                FROM accounts
             """)
             .fetchall()
         )
