@@ -60,6 +60,50 @@ def get_clickhouse_accounts_ddl() -> str:
         SETTINGS index_granularity = 8192;
     """
 
+def get_clickhouse_transaction_type_ddl() -> str:
+	return """
+		CREATE TABLE IF NOT EXISTS cdc.`transaction_type_log`
+		(
+			type_id UInt32,
+			type_code String,
+			type_name String,
+			direction String,
+			category String,
+			description Nullable(String),
+			inserted_at DateTime,
+            updated_at Nullable(DateTime),
+            delivered_at DateTime DEFAULT now(),
+            __deleted BOOLEAN DEFAULT false
+        )
+        ENGINE=MergeTree
+        ORDER BY type_id
+        SETTINGS index_granularity = 8192;
+    """
+
+def get_clickhouse_channels_ddl() -> str:
+	return """
+		CREATE TABLE IF NOT EXISTS cdc.`channels_log`
+		(			
+		    channel_id UInt32,
+			channel_name String NOT NULL,
+			channel_type String,
+			device_type Nullable(String),
+			security_level String,
+			inserted_at DateTime,
+            updated_at Nullable(DateTime),
+            delivered_at DateTime DEFAULT now(),
+            __deleted BOOLEAN DEFAULT false
+        )
+        ENGINE=MergeTree
+        ORDER BY channel_id
+        SETTINGS index_granularity = 8192;
+    """
+
+def get_clickhouse_transactions_ddl() -> str:
+	return """
+
+    """
+
 def get_mysql_ddl() -> str:
 	return """
 	    CREATE TABLE IF NOT EXISTS test_table(
@@ -83,7 +127,17 @@ def get_mysql_transactions_ddl() -> str:
 
 def get_mysql_transaction_type_ddl() -> str:
 	return """
-
+		CREATE TABLE IF NOT EXISTS transaction_type (
+		type_id INT NOT NULL AUTO_INCREMENT,
+		type_code VARCHAR(10) NOT NULL,
+		type_name VARCHAR(50) NOT NULL,
+		direction ENUM('debit', 'credit') NOT NULL,
+		category VARCHAR(30) NOT NULL,
+		description VARCHAR(255),
+		PRIMARY KEY (type_id),
+		INDEX idx_category (category),
+		INDEX idx_direction (direction)
+	) ENGINE=InnoDB CHARSET=utf8mb4;
 	"""
 
 def get_mysql_accounts_ddl() -> str:
@@ -100,9 +154,18 @@ def get_mysql_accounts_ddl() -> str:
 	) ENGINE=InnoDB CHARSET=utf8mb4;
 	"""
 
-def get_mysql_channel_ddl() -> str:
+def get_mysql_channels_ddl() -> str:
 	return """
-
+		CREATE TABLE IF NOT EXISTS channels (
+			channel_id INT NOT NULL AUTO_INCREMENT,
+			channel_name VARCHAR(30) NOT NULL,
+			channel_type VARCHAR(10),
+			device_type VARCHAR(20),
+			security_level VARCHAR(10),
+			PRIMARY KEY (channel_id),
+			INDEX idx_channel_type (channel_type),
+			INDEX idx_security_level (security_level)
+		) ENGINE=InnoDB CHARSET=utf8mb4;
 	"""
 
 def get_mysql_clients_ddl() -> str:

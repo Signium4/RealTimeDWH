@@ -6,9 +6,10 @@ import pandas as pd
 import cdc_test.value_generators as vg
 
 from sqlalchemy import text
-from cdc_test.get_ddls import (get_clickhouse_ddl, get_clickhouse_clients_ddl, get_clickhouse_accounts_ddl,
+from cdc_test.get_ddls import (get_clickhouse_ddl, get_clickhouse_channels_ddl, get_clickhouse_transaction_type_ddl,
+                               get_clickhouse_accounts_ddl, get_clickhouse_clients_ddl, get_clickhouse_transactions_ddl,
                                get_mysql_ddl, get_mysql_transactions_ddl, get_mysql_clients_ddl,
-                               get_mysql_accounts_ddl, get_mysql_transaction_type_ddl, get_mysql_channel_ddl)
+                               get_mysql_accounts_ddl, get_mysql_transaction_type_ddl, get_mysql_channels_ddl)
 from clickhouse_driver import Client
 from clickhouse_sqlalchemy import make_session
 
@@ -126,6 +127,68 @@ class SQLHelper:
             conn.execute(text(get_mysql_accounts_ddl()))
         print("Создана таблица Accounts в MySQL.")
 
+    def create_mysql_table_transaction_type(self):
+        user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
+        db_creds = f"{self.conn_params['MYSQL_HOST']}:{self.conn_params['MYSQL_PORT']}"
+
+        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user_creds}@{db_creds}")
+
+        with engine.connect() as conn:
+            conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
+            conn.execute(text("USE cdc;"))
+            conn.execute(text(get_mysql_transaction_type_ddl()))
+            conn.execute(text(
+                """
+                    INSERT INTO cdc.transaction_type 
+                    (type_code, type_name, direction, category, description)
+                    VALUES
+                    ('TRANSF', 'Перевод между счетами', 'debit', 'transfer', 'Внутрибанковский перевод'),
+                    ('CASHIN', 'Внесение наличных', 'credit', 'cash', 'Через кассу/банкомат'),
+                    ('PAYMENT', 'Оплата услуг', 'debit', 'payment', 'Коммунальные платежи, налоги'),
+                    ('SALARY', 'Зарплата', 'credit', 'income', 'Зачисление зарплаты'),
+                    ('CASHOUT', 'Снятие наличных', 'debit', 'cash', 'В банкомате или кассе'),
+                    ('REFUND', 'Возврат платежа', 'credit', 'refund', 'Отмена операции'),
+                    ('FEE', 'Комиссия', 'debit', 'fee', 'Банковская комиссия'),
+                    ('LOAN', 'Кредит', 'credit', 'loan', 'Зачисление кредитных средств'),
+                    ('DEPOSIT', 'Пополнение депозита', 'debit', 'savings', 'Вклад в банке'),
+                    ('INTEREST', 'Проценты', 'credit', 'income', 'Начисленные проценты');
+                """
+            ))
+            conn.commit()
+
+        print("Создана таблица Transaction type в MySQL.")
+
+    def create_mysql_table_channels(self):
+        user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
+        db_creds = f"{self.conn_params['MYSQL_HOST']}:{self.conn_params['MYSQL_PORT']}"
+
+        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user_creds}@{db_creds}")
+
+        with engine.connect() as conn:
+            conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
+            conn.execute(text("USE cdc;"))
+            conn.execute(text(get_mysql_channels_ddl()))
+            conn.execute(text(
+                """
+                    INSERT INTO cdc.channels 
+                    (channel_name, channel_type, device_type, security_level)
+                    VALUES
+                    ('Головное отделение', 'branch', NULL, 'high'),
+                    ('Банкомат №42', 'atm', 'NCR', 'medium'),
+                    ('Мобильное приложение', 'mobile', 'iOS', 'high'),
+                    ('Интернет-банк', 'web', 'Chrome', 'high'),
+                    ('Платежный терминал', 'pos', 'Ingenico', 'medium'),
+                    ('Партнерский API', 'api', NULL, 'low'),
+                    ('Филиал Центральный', 'branch', NULL, 'medium'),
+                    ('Банкомат №128', 'atm', 'Diebold', 'medium'),
+                    ('Мобильный банк', 'mobile', 'Android', 'high'),
+                    ('Касса операционная', 'branch', NULL, 'high');            
+                """
+            ))
+            conn.commit()
+
+        print("Создана таблица Channels в MySQL.")
+
     def create_clickhouse_table(self):
         client = Client(
             host=self.conn_params['CH_HOST'],
@@ -165,15 +228,45 @@ class SQLHelper:
 
         print("Создана таблица Accounts в ClickHouse")
 
+    def create_clickhouse_table_transaction_type(self):
+        client = Client(
+            host=self.conn_params['CH_HOST'],
+            user=self.conn_params['CH_USER'],
+            password=self.conn_params['CH_PASSWORD']
+        )
+
+        client.execute("CREATE DATABASE IF NOT EXISTS cdc;")
+        client.execute("USE cdc;")
+        client.execute(get_clickhouse_transaction_type_ddl())
+
+        print("Создана таблица Transaction type в ClickHouse")
+
+    def create_clickhouse_table_channels(self):
+        client = Client(
+            host=self.conn_params['CH_HOST'],
+            user=self.conn_params['CH_USER'],
+            password=self.conn_params['CH_PASSWORD']
+        )
+
+        client.execute("CREATE DATABASE IF NOT EXISTS cdc;")
+        client.execute("USE cdc;")
+        client.execute(get_clickhouse_channels_ddl())
+
+        print("Создана таблица Channels в ClickHouse")
+
     def create_tables(self):
         # MySQL Tables
         self.create_mysql_table()
         self.create_mysql_table_clients()
         self.create_mysql_table_accounts()
+        self.create_mysql_table_transaction_type()
+        self.create_mysql_table_channels()
         # ClickHouse tables
         self.create_clickhouse_table()
         self.create_clickhouse_table_clients()
         self.create_clickhouse_table_accounts()
+        self.create_clickhouse_table_transaction_type()
+        self.create_clickhouse_table_channels()
 
     def get_mysql_connection(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
@@ -417,6 +510,28 @@ class SQLHelper:
             self.execute_query(f"""
                 SELECT account_id
                 FROM accounts
+            """)
+            .fetchall()
+        )
+
+        return int(*r.choice(min_max))
+
+    def get_random_id_transaction_type(self) -> int:
+        min_max = (
+            self.execute_query(f"""
+                SELECT type_id
+                FROM accounts
+            """)
+            .fetchall()
+        )
+
+        return int(*r.choice(min_max))
+
+    def get_random_id_channels(self) -> int:
+        min_max = (
+            self.execute_query(f"""
+                SELECT channel_id
+                FROM channels
             """)
             .fetchall()
         )
