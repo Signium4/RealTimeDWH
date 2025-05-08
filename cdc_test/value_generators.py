@@ -29,7 +29,7 @@ def generate_date(min=18, max=70):
     end_date = datetime.datetime.now() - datetime.timedelta(days=min * 365)
     start_date = end_date - datetime.timedelta(days=(max - min) * 365)
     random_days = r.randint(0, (end_date - start_date).days)
-    return (start_date + datetime.timedelta(days=random_days)).strftime("%Y-%m-%d")
+    return str((start_date + datetime.timedelta(days=random_days)).strftime("%Y-%m-%d"))
 
 def generate_gender():
     return r.choice(['М', 'Ж'])

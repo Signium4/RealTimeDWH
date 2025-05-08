@@ -4,8 +4,8 @@
         "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
         "tasks.max": "1",
         "exactlyOnce": "false",
-        "topics": "mysql_server.cdc.test_table",
-        "topic2TableMap": "mysql_server.cdc.test_table=test_table_log",
+        "topics": "mysql_server.cdc.test_table,mysql_server.cdc.clients,mysql_server.cdc.accounts,mysql_server.cdc.transaction_type,mysql_server.cdc.channels",
+        "topic2TableMap": "mysql_server.cdc.test_table=test_table_log,mysql_server.cdc.clients=clients_log,mysql_server.cdc.accounts=accounts_log,mysql_server.cdc.transaction_type=transaction_type_log,mysql_server.cdc.channels=channels_log",
 
         "hostname": "clickhouse",
         "database": "cdc",
@@ -13,6 +13,9 @@
         "password": "default_password",
         "port": "8123",
 
+        "batch.size": "100",
+        "max.retries": "10",
+        "retry.backoff.ms": "1000",
 
         "value.converter.schemas.enable": "true",
         "key.converter.schemas.enable": "true",

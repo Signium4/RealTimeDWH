@@ -26,9 +26,9 @@ def get_clickhouse_clients_ddl() -> str:
 			email Nullable(String),
 			phone Nullable(String),
 			tax_id Nullable(String),
-			birth_date Nullable(Date),
-			gender Enum('М' = 1, 'Ж' = 2),
-			status Enum('активный' = 1, 'неактивный' = 2),
+			birth_date Nullable(String),
+			gender Nullable(String),
+			status Nullable(String),
 			country Nullable(String),
 			city Nullable(String),
             inserted_at DateTime,
@@ -128,29 +128,33 @@ def get_mysql_transactions_ddl() -> str:
 def get_mysql_transaction_type_ddl() -> str:
 	return """
 		CREATE TABLE IF NOT EXISTS transaction_type (
-		type_id INT NOT NULL AUTO_INCREMENT,
-		type_code VARCHAR(10) NOT NULL,
-		type_name VARCHAR(50) NOT NULL,
-		direction ENUM('debit', 'credit') NOT NULL,
-		category VARCHAR(30) NOT NULL,
-		description VARCHAR(255),
-		PRIMARY KEY (type_id),
-		INDEX idx_category (category),
-		INDEX idx_direction (direction)
-	) ENGINE=InnoDB CHARSET=utf8mb4;
+			type_id INT NOT NULL AUTO_INCREMENT,
+			type_code VARCHAR(10) NOT NULL,
+			type_name VARCHAR(50) NOT NULL,
+			direction VARCHAR(10) NOT NULL,
+			category VARCHAR(30) NOT NULL,
+			description VARCHAR(255),
+			inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (type_id),
+			INDEX idx_category (category),
+			INDEX idx_direction (direction)
+		) ENGINE=InnoDB CHARSET=utf8mb4;
 	"""
 
 def get_mysql_accounts_ddl() -> str:
 	return """
 		CREATE TABLE IF NOT EXISTS accounts (
-		account_id INT NOT NULL AUTO_INCREMENT,
-		client_id INT NOT NULL,
-		account_number VARCHAR(20) NOT NULL,
-		account_type VARCHAR(20) NOT NULL,
-		open_date DATE NOT NULL,
-		PRIMARY KEY (account_id),
-		INDEX idx_client (client_id),
-		INDEX idx_type (account_type)
+			account_id INT NOT NULL AUTO_INCREMENT,
+			client_id INT NOT NULL,
+			account_number VARCHAR(20) NOT NULL,
+			account_type VARCHAR(20) NOT NULL,
+			open_date DATE NOT NULL,
+			inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (account_id),
+			INDEX idx_client (client_id),
+			INDEX idx_type (account_type)
 	) ENGINE=InnoDB CHARSET=utf8mb4;
 	"""
 
@@ -162,6 +166,8 @@ def get_mysql_channels_ddl() -> str:
 			channel_type VARCHAR(10),
 			device_type VARCHAR(20),
 			security_level VARCHAR(10),
+			inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
 			PRIMARY KEY (channel_id),
 			INDEX idx_channel_type (channel_type),
 			INDEX idx_security_level (security_level)
@@ -178,9 +184,9 @@ def get_mysql_clients_ddl() -> str:
 			email VARCHAR(100),
 			phone VARCHAR(20),
 			tax_id VARCHAR(20),
-			birth_date DATE,
-			gender ENUM('М', 'Ж'),
-			status ENUM('активный', 'неактивный') DEFAULT 'активный',
+			birth_date VARCHAR(10),
+			gender VARCHAR(10) NOT NULL,
+			status VARCHAR(20) DEFAULT 'активный',
 			country VARCHAR(50),
 			city VARCHAR(50),
 			inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

@@ -5,15 +5,13 @@
         "database.allowPublicKeyRetrieval": "true",
         "database.dbname": "cdc",
         "database.user": "root",
-        "slot.name": "cdc_test",
         "database.server.id": "184054",
-        "topics": "cdc_topic",
+        "table.include.list": "cdc.test_table,cdc.clients,cdc.accounts,cdc.transaction_type,cdc.channels",
         "database.history.kafka.bootstrap.servers": "broker:29092",
         "database.history.kafka.topic": "schema-changes.cdc",
         "database.server.name": "mysql_server",
         "database.port": "3306",
         "null.handling.mode": "keep",
-        "topic.prefix": "cdc_mysql_",
         "decimal.handling.mode": "precise",
         "database.hostname": "mysql",
         "database.password": "debezium",
@@ -27,7 +25,7 @@
 
         "errors.tolerance": "all",
         "errors.deadletterqueue.topic.name":"dlq_mysql",
-        "errors.deadletterqueue.topic.replication.factor": 1,
+        "errors.deadletterqueue.topic.replication.factor": 2,
 
         "transforms": "Unwrap, Cast",
 

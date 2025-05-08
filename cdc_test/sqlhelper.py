@@ -139,7 +139,7 @@ class SQLHelper:
             conn.execute(text(get_mysql_transaction_type_ddl()))
             conn.execute(text(
                 """
-                    INSERT INTO cdc.transaction_type 
+                    INSERT INTO cdc.transaction_type
                     (type_code, type_name, direction, category, description)
                     VALUES
                     ('TRANSF', 'Перевод между счетами', 'debit', 'transfer', 'Внутрибанковский перевод'),
@@ -170,7 +170,7 @@ class SQLHelper:
             conn.execute(text(get_mysql_channels_ddl()))
             conn.execute(text(
                 """
-                    INSERT INTO cdc.channels 
+                    INSERT INTO cdc.channels
                     (channel_name, channel_type, device_type, security_level)
                     VALUES
                     ('Головное отделение', 'branch', NULL, 'high'),
@@ -182,7 +182,7 @@ class SQLHelper:
                     ('Филиал Центральный', 'branch', NULL, 'medium'),
                     ('Банкомат №128', 'atm', 'Diebold', 'medium'),
                     ('Мобильный банк', 'mobile', 'Android', 'high'),
-                    ('Касса операционная', 'branch', NULL, 'high');            
+                    ('Касса операционная', 'branch', NULL, 'high');
                 """
             ))
             conn.commit()
