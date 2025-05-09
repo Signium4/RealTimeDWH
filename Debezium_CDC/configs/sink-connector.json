@@ -4,8 +4,8 @@
         "connector.class": "com.clickhouse.kafka.connect.ClickHouseSinkConnector",
         "tasks.max": "1",
         "exactlyOnce": "false",
-        "topics": "mysql_server.cdc.test_table,mysql_server.cdc.clients,mysql_server.cdc.accounts,mysql_server.cdc.transaction_type,mysql_server.cdc.channels",
-        "topic2TableMap": "mysql_server.cdc.test_table=test_table_log,mysql_server.cdc.clients=clients_log,mysql_server.cdc.accounts=accounts_log,mysql_server.cdc.transaction_type=transaction_type_log,mysql_server.cdc.channels=channels_log",
+        "topics": "mysql_server.cdc.test_table,mysql_server.cdc.clients,mysql_server.cdc.accounts,mysql_server.cdc.transaction_type,mysql_server.cdc.channels,mysql_server.cdc.transactions",
+        "topic2TableMap": "mysql_server.cdc.test_table=test_table_log,mysql_server.cdc.clients=clients_log,mysql_server.cdc.accounts=accounts_log,mysql_server.cdc.transaction_type=transaction_type_log,mysql_server.cdc.channels=channels_log,mysql_server.cdc.transactions=transactions_log",
 
         "hostname": "clickhouse",
         "database": "cdc",

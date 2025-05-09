@@ -101,7 +101,25 @@ def get_clickhouse_channels_ddl() -> str:
 
 def get_clickhouse_transactions_ddl() -> str:
 	return """
-
+		CREATE TABLE IF NOT EXISTS cdc.`transactions_log`
+		(
+			transaction_id UInt32,
+			account_id UInt32 NOT NULL,
+			type_id UInt32 NOT NULL,
+			channel_id Nullable(UInt32),
+			amount Decimal(10, 2) NOT NULL,
+			currency String,
+			transaction_date DateTime NOT NULL,
+			description Nullable(String),
+			status String,
+			inserted_at DateTime,
+            updated_at Nullable(DateTime),
+            delivered_at DateTime DEFAULT now(),
+            __deleted BOOLEAN DEFAULT false
+		)
+		ENGINE = MergeTree
+		ORDER BY (transaction_id, account_id)
+		SETTINGS index_granularity = 8192;
     """
 
 def get_mysql_ddl() -> str:
@@ -121,7 +139,27 @@ def get_mysql_ddl() -> str:
 
 def get_mysql_transactions_ddl() -> str:
 	return """
-	    
+	    CREATE TABLE IF NOT EXISTS transactions (
+			transaction_id INT NOT NULL AUTO_INCREMENT,
+			account_id INT NOT NULL,
+			type_id INT NOT NULL,
+			channel_id INT,
+			amount DECIMAL(10, 2) NOT NULL,
+			currency VARCHAR(3) NOT NULL DEFAULT 'RUB',
+			transaction_date TIMESTAMP NOT NULL,
+			description VARCHAR(255),
+			status VARCHAR(10),
+			inserted_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+			updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+			PRIMARY KEY (transaction_id),
+			INDEX idx_account (account_id),
+			INDEX idx_type (type_id),
+			INDEX idx_channel (channel_id),
+			INDEX idx_date (transaction_date),
+			INDEX idx_status (status)
+		)
+		ENGINE=InnoDB 
+		DEFAULT CHARSET=utf8mb4;
 	"""
 
 

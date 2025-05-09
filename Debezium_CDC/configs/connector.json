@@ -6,7 +6,7 @@
         "database.dbname": "cdc",
         "database.user": "root",
         "database.server.id": "184054",
-        "table.include.list": "cdc.test_table,cdc.clients,cdc.accounts,cdc.transaction_type,cdc.channels",
+        "table.include.list": "cdc.test_table,cdc.clients,cdc.accounts,cdc.transaction_type,cdc.channels,cdc.transactions",
         "database.history.kafka.bootstrap.servers": "broker:29092",
         "database.history.kafka.topic": "schema-changes.cdc",
         "database.server.name": "mysql_server",

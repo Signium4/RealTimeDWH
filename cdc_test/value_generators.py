@@ -45,13 +45,25 @@ def generate_city():
 
 def generate_account_type():
     account_types = ['дебетовый', 'кредитный', 'депозитный', 'ссудный', 'сберегательный']
-    weights = [0.6, 0.2, 0.1, 0.05, 0.05]  # Вероятности для каждого типа
+    weights = [0.6, 0.2, 0.1, 0.05, 0.05]
     return r.choices(account_types, weights=weights, k=1)[0]
 
 def generate_account_number(bank_code='12345') -> str:
     random_digits = ''.join([str(r.randint(0, 9)) for _ in range(15)])
     account_number = f"{bank_code}{random_digits}"
     return account_number
+
+def generate_transaction_date():
+    start_date = datetime.datetime(2025, 1, 1)
+    end_date = datetime.datetime(2025, 1, 31, 23, 59, 59)
+    delta_seconds = int((end_date - start_date).total_seconds())
+    random_seconds = r.randint(0, delta_seconds)
+    return start_date + datetime.timedelta(seconds=random_seconds)
+
+def generate_transaction_status():
+    statuses = ['pending', 'completed', 'failed', 'reversed']
+    weights = [0.6, 0.3, 0.05, 0.05]
+    return r.choices(statuses, weights=weights, k=1)[0]
 
 def generate_int_value():
     return r.randint(0, 100)
