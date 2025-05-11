@@ -69,7 +69,7 @@ FROM
 )
 WHERE 1=1
 	and rn = 1
-    AND NOT __deleted;
+	and not __deleted;
 
 
 CREATE VIEW accounts_cl
@@ -95,7 +95,7 @@ FROM
 )
 WHERE 1=1
 	and rn = 1
-    AND NOT __deleted;
+	and not __deleted;
 
 
 CREATE VIEW transaction_type_cl
@@ -123,7 +123,7 @@ FROM
 )
 WHERE 1=1
 	and rn = 1
-    AND NOT __deleted;
+	and not __deleted;
 
 
 CREATE VIEW channels_cl
@@ -149,4 +149,4 @@ FROM
 )
 WHERE 1=1
 	and rn = 1
-    AND NOT __deleted;
+	and not __deleted;
