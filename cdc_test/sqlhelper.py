@@ -53,20 +53,20 @@ class SQLHelper:
 
         if self.count_log:
             # Test table
-            print(f"Кол-во операций INSERT в таблице Test: {self.insert_count}")
-            print(f"Кол-во операций UPDATE в таблице Test: {self.update_count}")
-            print(f"Кол-во операций DELETE в таблице Test: {self.delete_count}")
+            print(f"Number of INSERT operations in the table Test: {self.insert_count}")
+            print(f"Number of UPDATE operations in the table Test: {self.update_count}")
+            print(f"Number of DELETE operations in the table Test: {self.delete_count}")
             # Clients table
-            print(f"Кол-во операций INSERT в таблице Clients: {self.insert_count_clients}")
-            print(f"Кол-во операций UPDATE в таблице Clients: {self.update_count_clients}")
-            print(f"Кол-во операций DELETE в таблице Clients: {self.delete_count_clients}")
+            print(f"Number of INSERT operations in the table Clients: {self.insert_count_clients}")
+            print(f"Number of UPDATE operations in the table Clients: {self.update_count_clients}")
+            print(f"Number of DELETE operations in the table Clients: {self.delete_count_clients}")
             # Accounts table
-            print(f"Кол-во операций INSERT в таблице Accounts: {self.insert_count_accounts}")
-            print(f"Кол-во операций DELETE в таблице Accounts: {self.delete_count_accounts}")
+            print(f"Number of INSERT operations in the table Accounts: {self.insert_count_accounts}")
+            print(f"Number of DELETE operations in the table Accounts: {self.delete_count_accounts}")
             # Transactions table
-            print(f"Кол-во операций INSERT в таблице Transactions: {self.insert_count_transactions}")
-            print(f"Кол-во операций UPDATE в таблице Transactions: {self.update_count_transactions}")
-            print(f"Кол-во операций DELETE в таблице Transactions: {self.delete_count_transactions}")
+            print(f"Number of INSERT operations in the table Transactions: {self.insert_count_transactions}")
+            print(f"Number of UPDATE operations in the table Transactions: {self.update_count_transactions}")
+            print(f"Number of DELETE operations in the table Transactions: {self.delete_count_transactions}")
 
     def run_transactions(self):
         # Test table
@@ -95,7 +95,7 @@ class SQLHelper:
             self.update_row_transactions()
         if self.delete_count_transactions > 0:
             self.delete_row_transactions()
-        print("Транзакции были проведены успешно.")
+        print("The transactions were completed successfully.")
 
     def create_mysql_table(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
@@ -107,7 +107,7 @@ class SQLHelper:
             conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
             conn.execute(text("USE cdc;"))
             conn.execute(text(get_mysql_ddl()))
-        print("Создана тестовая таблица в MySQL.")
+        print("Test table has been created in MySQL.")
 
     def create_mysql_table_clients(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
@@ -119,7 +119,7 @@ class SQLHelper:
             conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
             conn.execute(text("USE cdc;"))
             conn.execute(text(get_mysql_clients_ddl()))
-        print("Создана таблица Clients в MySQL.")
+        print("Clients table has been created in MySQL.")
 
     def create_mysql_table_accounts(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
@@ -131,7 +131,7 @@ class SQLHelper:
             conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
             conn.execute(text("USE cdc;"))
             conn.execute(text(get_mysql_accounts_ddl()))
-        print("Создана таблица Accounts в MySQL.")
+        print("Accounts table has been created in MySQL.")
 
     def create_mysql_table_transaction_type(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
@@ -143,26 +143,9 @@ class SQLHelper:
             conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
             conn.execute(text("USE cdc;"))
             conn.execute(text(get_mysql_transaction_type_ddl()))
-            conn.execute(text(
-                """
-                    INSERT INTO cdc.transaction_type
-                    (type_code, type_name, direction, category, description)
-                    VALUES
-                    ('TRANSF', 'Перевод между счетами', 'debit', 'transfer', 'Внутрибанковский перевод'),
-                    ('CASHIN', 'Внесение наличных', 'credit', 'cash', 'Через кассу/банкомат'),
-                    ('PAYMENT', 'Оплата услуг', 'debit', 'payment', 'Коммунальные платежи, налоги'),
-                    ('SALARY', 'Зарплата', 'credit', 'income', 'Зачисление зарплаты'),
-                    ('CASHOUT', 'Снятие наличных', 'debit', 'cash', 'В банкомате или кассе'),
-                    ('REFUND', 'Возврат платежа', 'credit', 'refund', 'Отмена операции'),
-                    ('FEE', 'Комиссия', 'debit', 'fee', 'Банковская комиссия'),
-                    ('LOAN', 'Кредит', 'credit', 'loan', 'Зачисление кредитных средств'),
-                    ('DEPOSIT', 'Пополнение депозита', 'debit', 'savings', 'Вклад в банке'),
-                    ('INTEREST', 'Проценты', 'credit', 'income', 'Начисленные проценты');
-                """
-            ))
             conn.commit()
 
-        print("Создана таблица Transaction type в MySQL.")
+        print("Transaction type table has been created in MySQL.")
 
     def create_mysql_table_channels(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
@@ -174,6 +157,30 @@ class SQLHelper:
             conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
             conn.execute(text("USE cdc;"))
             conn.execute(text(get_mysql_channels_ddl()))
+            conn.commit()
+
+        print("Channels table has been created in MySQL.")
+
+    def create_mysql_table_transactions(self):
+        user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
+        db_creds = f"{self.conn_params['MYSQL_HOST']}:{self.conn_params['MYSQL_PORT']}"
+
+        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user_creds}@{db_creds}")
+
+        with engine.connect() as conn:
+            conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
+            conn.execute(text("USE cdc;"))
+            conn.execute(text(get_mysql_transactions_ddl()))
+
+        print("Transactions table has been created in MySQL.")
+
+    def mysql_insert_channels_tr_type(self):
+        user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
+        db_creds = f"{self.conn_params['MYSQL_HOST']}:{self.conn_params['MYSQL_PORT']}"
+        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user_creds}@{db_creds}")
+        with engine.connect() as conn:
+            conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
+            conn.execute(text("USE cdc;"))
             conn.execute(text(
                 """
                     INSERT INTO cdc.channels
@@ -192,20 +199,25 @@ class SQLHelper:
                 """
             ))
             conn.commit()
-
-        print("Создана таблица Channels в MySQL.")
-
-    def create_mysql_table_transactions(self):
-        user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
-        db_creds = f"{self.conn_params['MYSQL_HOST']}:{self.conn_params['MYSQL_PORT']}"
-
-        engine = sqlalchemy.create_engine(f"mysql+mysqlconnector://{user_creds}@{db_creds}")
-
-        with engine.connect() as conn:
-            conn.execute(text("CREATE DATABASE IF NOT EXISTS cdc;"))
-            conn.execute(text("USE cdc;"))
-            conn.execute(text(get_mysql_transactions_ddl()))
-        print("Создана таблица Transactions в MySQL.")
+            conn.execute(text(
+                """
+                    INSERT INTO cdc.transaction_type
+                    (type_code, type_name, direction, category, description)
+                    VALUES
+                    ('TRANSF', 'Перевод между счетами', 'debit', 'transfer', 'Внутрибанковский перевод'),
+                    ('CASHIN', 'Внесение наличных', 'credit', 'cash', 'Через кассу/банкомат'),
+                    ('PAYMENT', 'Оплата услуг', 'debit', 'payment', 'Коммунальные платежи, налоги'),
+                    ('SALARY', 'Зарплата', 'credit', 'income', 'Зачисление зарплаты'),
+                    ('CASHOUT', 'Снятие наличных', 'debit', 'cash', 'В банкомате или кассе'),
+                    ('REFUND', 'Возврат платежа', 'credit', 'refund', 'Отмена операции'),
+                    ('FEE', 'Комиссия', 'debit', 'fee', 'Банковская комиссия'),
+                    ('LOAN', 'Кредит', 'credit', 'loan', 'Зачисление кредитных средств'),
+                    ('DEPOSIT', 'Пополнение депозита', 'debit', 'savings', 'Вклад в банке'),
+                    ('INTEREST', 'Проценты', 'credit', 'income', 'Начисленные проценты');
+                """
+            ))
+            conn.commit()
+            print("Added data to the Channels and Transaction type tables")
 
     def create_clickhouse_table(self):
         client = Client(
@@ -218,7 +230,7 @@ class SQLHelper:
         client.execute("USE cdc;")
         client.execute(get_clickhouse_ddl())
 
-        print("Создана тестовая таблица в ClickHouse")
+        print("Test table has been created in ClickHouse.")
 
     def create_clickhouse_table_clients(self):
         client = Client(
@@ -231,7 +243,7 @@ class SQLHelper:
         client.execute("USE cdc;")
         client.execute(get_clickhouse_clients_ddl())
 
-        print("Создана таблица Clients в ClickHouse")
+        print("Clients table has been created in ClickHouse.")
 
     def create_clickhouse_table_accounts(self):
         client = Client(
@@ -244,7 +256,7 @@ class SQLHelper:
         client.execute("USE cdc;")
         client.execute(get_clickhouse_accounts_ddl())
 
-        print("Создана таблица Accounts в ClickHouse")
+        print("Accounts table has been created in ClickHouse.")
 
     def create_clickhouse_table_transaction_type(self):
         client = Client(
@@ -257,7 +269,7 @@ class SQLHelper:
         client.execute("USE cdc;")
         client.execute(get_clickhouse_transaction_type_ddl())
 
-        print("Создана таблица Transaction type в ClickHouse")
+        print("Transaction type table has been created in ClickHouse.")
 
     def create_clickhouse_table_channels(self):
         client = Client(
@@ -270,7 +282,7 @@ class SQLHelper:
         client.execute("USE cdc;")
         client.execute(get_clickhouse_channels_ddl())
 
-        print("Создана таблица Channels в ClickHouse")
+        print("Channels table has been created in ClickHouse.")
 
     def create_clickhouse_table_transactions(self):
         client = Client(
@@ -283,7 +295,7 @@ class SQLHelper:
         client.execute("USE cdc;")
         client.execute(get_clickhouse_transactions_ddl())
 
-        print("Создана таблица Transactions в ClickHouse")
+        print("Transactions table has been created in ClickHouse.")
 
     def create_tables(self):
         # MySQL Tables
@@ -300,6 +312,8 @@ class SQLHelper:
         self.create_clickhouse_table_transaction_type()
         self.create_clickhouse_table_channels()
         self.create_clickhouse_table_transactions()
+        # Filing in data for Channels and Transaction type
+        self.mysql_insert_channels_tr_type()
 
     def get_mysql_connection(self):
         user_creds = f"{self.conn_params['MYSQL_USER']}:{self.conn_params['MYSQL_PASSWORD']}"
@@ -318,7 +332,7 @@ class SQLHelper:
 
     def insert_row(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (INSERT): {start}")
+        print(f"Start of transactions (INSERT): {start}")
         for i in range(self.insert_count):
             query = f"""
                 INSERT INTO test_table(
@@ -336,12 +350,12 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (INSERT): {end}")
-        print(f"Транзакции были выполнены за {(end - start).seconds} секунд.")
+        print(f"End of transactions (INSERT): {end}")
+        print(f"Transactions were completed in {(end - start).seconds} seconds.")
 
     def insert_row_clients(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (INSERT) в таблицу Clients: {start}")
+        print(f"Start of transactions (INSERT) into the Clients table: {start}")
         for i in range(self.insert_count_clients):
             query = f"""
                 INSERT INTO clients(
@@ -373,12 +387,12 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (INSERT) в таблицу Clients: {end}")
-        print(f"Транзакции в таблицу Clients были выполнены за {(end - start).seconds} секунд.")
+        print(f"End of transactions (INSERT) in the Clients table: {end}")
+        print(f"Transactions to the Clients table were completed in {(end - start).seconds} seconds.")
 
     def insert_row_accounts(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (INSERT) в таблицу Accounts: {start}")
+        print(f"Start of transactions (INSERT) into the Accounts table: {start}")
         for i in range(self.insert_count_accounts):
             query = f"""
                 INSERT INTO accounts(
@@ -398,12 +412,12 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (INSERT) в таблицу Accounts: {end}")
-        print(f"Транзакции в таблицу Accounts были выполнены за {(end - start).seconds} секунд.")
+        print(f"End of transactions (INSERT) in the Accounts table: {end}")
+        print(f"Transactions to the Accounts table were completed in {(end - start).seconds} seconds.")
 
     def insert_row_transactions(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (INSERT) в таблицу Transactions: {start}")
+        print(f"Start of transactions (INSERT) into the Transactions table: {start}")
         for i in range(self.insert_count_transactions):
             query = f"""
                 INSERT INTO transactions(
@@ -431,12 +445,12 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (INSERT) в таблицу Transactions: {end}")
-        print(f"Транзакции в таблицу Transactions были выполнены за {(end - start).seconds} секунд.")
+        print(f"End of transactions (INSERT) in the Transactions table: {end}")
+        print(f"Transactions to the Transactions table were completed in {(end - start).seconds} seconds.")
 
     def delete_row(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (DELETE): {start}")
+        print(f"Start of transactions (DELETE): {start}")
 
         idxs = []
 
@@ -451,13 +465,13 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (DELETE): {end}")
-        print(f"Транзакции были выполнены за {(end - start).seconds} секунд.")
-        print(f"Удалению подверглись записи со следующими индексами: {idxs}")
+        print(f"End of transactions (DELETE): {end}")
+        print(f"Transactions were completed in {(end - start).seconds} seconds.")
+        print(f"Records with the following indexes were deleted: {idxs}")
 
     def delete_row_clients(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (DELETE): {start}")
+        print(f"Start of transactions (DELETE) in the Clients table: {start}")
 
         idxs = []
 
@@ -472,13 +486,13 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (DELETE) в таблицу Clients: {end}")
-        print(f"Транзакции в таблицу Clients были выполнены за {(end - start).seconds} секунд.")
-        print(f"Удалению в таблице Clients подверглись записи со следующими индексами: {idxs}")
+        print(f"End of transactions (DELETE) to the Clients table: {end}")
+        print(f"Transactions to the Clients table were completed in {(end - start).seconds} seconds.")
+        print(f"Records with the following indexes were deleted in the Clients table: {idxs}")
 
     def delete_row_accounts(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (DELETE): {start}")
+        print(f"Start of transactions (DELETE) in the Accounts table: {start}")
 
         idxs = []
 
@@ -493,13 +507,13 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (DELETE) в таблицу Accounts: {end}")
-        print(f"Транзакции в таблицу Accounts были выполнены за {(end - start).seconds} секунд.")
-        print(f"Удалению в таблице Accounts подверглись записи со следующими индексами: {idxs}")
+        print(f"End of transactions (DELETE) in the Accounts table: {end}")
+        print(f"Transactions in the Accounts table were completed in {(end - start).seconds} seconds.")
+        print(f"Records with the following indexes were deleted in the Accounts table: {idxs}")
 
     def delete_row_transactions(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (DELETE): {start}")
+        print(f"Start of transactions (DELETE) in the Transactions table: {start}")
         idxs = []
         for i in range(self.delete_count_transactions):
             idx = self.get_random_id_transactions()
@@ -510,13 +524,13 @@ class SQLHelper:
             """
             self.execute_query(query)
         end = datetime.datetime.now()
-        print(f"Конец транзакций (DELETE) в таблицу Transactions: {end}")
-        print(f"Транзакции в таблицу Transactions были выполнены за {(end - start).seconds} секунд.")
-        print(f"Удалению в таблице Transactions подверглись записи со следующими индексами: {idxs}")
+        print(f"End of transactions (DELETE) in the Transactions table: {end}")
+        print(f"The transactions in the Transactions table were completed in {(end - start).seconds} seconds.")
+        print(f"Records with the following indexes were deleted in the Transactions table: {idxs}")
 
     def update_row(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (UPDATE): {start}")
+        print(f"Start of transactions (UPDATE): {start}")
 
         idxs = []
 
@@ -535,13 +549,13 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (UPDATE): {end}")
-        print(f"Транзакции были выполнены за {(end - start).seconds} секунд.")
-        print(f"Изменению подверглись записи со следующими индексами: {idxs}")
+        print(f"End of Transactions (UPDATE): {end}")
+        print(f"Transactions were completed in {(end - start).seconds} seconds.")
+        print(f"Records with the following indexes have been changed: {idxs}")
 
     def update_row_clients(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (UPDATE): {start}")
+        print(f"Start of transactions (UPDATE) in the Clients table: {start}")
 
         idxs = []
 
@@ -562,13 +576,13 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (UPDATE): {end}")
-        print(f"Транзакции в таблице Clients были выполнены за {(end - start).seconds} секунд.")
-        print(f"Изменению подверглись записи со следующими индексами: {idxs}")
+        print(f"End of transactions (UPDATE) in the Clients table: {end}")
+        print(f"Transactions in the Clients table were completed in {(end - start).seconds} seconds.")
+        print(f"Records with the following indexes have been changed: {idxs}")
 
     def update_row_transactions(self) -> None:
         start = datetime.datetime.now()
-        print(f"Начало транзакций (UPDATE): {start}")
+        print(f"Start of transactions (UPDATE) in the Transactions table: {start}")
 
         idxs = []
 
@@ -588,9 +602,9 @@ class SQLHelper:
             self.execute_query(query)
 
         end = datetime.datetime.now()
-        print(f"Конец транзакций (UPDATE): {end}")
-        print(f"Транзакции в таблице Transactions были выполнены за {(end - start).seconds} секунд.")
-        print(f"Изменению подверглись записи со следующими индексами: {idxs}")
+        print(f"End of transactions (UPDATE) in the Transactions table: {end}")
+        print(f"Transactions in the Transactions table were completed in {(end - start).seconds} seconds.")
+        print(f"Records with the following indexes have been changed: {idxs}")
 
     def get_random_id(self) -> int:
         min_max = (
@@ -678,13 +692,3 @@ class SQLHelper:
         session = make_session(engine=engine)
 
         return session
-
-    def read_mysql_table(self, query) -> pd.DataFrame:
-
-        with self.get_mysql_connection() as mysql_conn:
-            dataframe = pd.read_sql(
-                sql=query,
-                con=mysql_conn
-            )
-
-        return dataframe
